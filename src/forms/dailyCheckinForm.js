@@ -56,18 +56,24 @@ async function selectProject(page, questionTitle, projectName) {
   }
 }
 
-async function fillProject(page, project, projectNumber) {
+async function fillProject(page, project, projectNumber, onProgress) {
   const projectTitle = `Project ${projectNumber}`;
   const plannedTitle = `Hours Planned (${projectNumber})`;
   const billableTitle = `Billable hours (${projectNumber})`;
   const ebhTitle = `EBH (${projectNumber})`;
   const tasksTitle = `Tasks to be done (${projectNumber})`;
 
+  if (onProgress) onProgress(`Selecting ${projectTitle}: ${project.name}`);
   await selectProject(page, projectTitle, project.name);
+
+  if (onProgress) onProgress(`Filling ${plannedTitle}`);
   await fillTime(page, plannedTitle, project.planned);
+
+  if (onProgress) onProgress(`Filling ${billableTitle}`);
   await fillTime(page, billableTitle, project.billable);
 
   if (project.ebhEquivalent) {
+    if (onProgress) onProgress(`Checking ${ebhTitle}`);
     const ebhQuestion = getQuestion(page, ebhTitle);
     await ensureAriaChecked(
       ebhQuestion.getByRole("checkbox", {
@@ -77,20 +83,21 @@ async function fillProject(page, project, projectNumber) {
     );
   }
 
+  if (onProgress) onProgress(`Filling ${tasksTitle}`);
   const tasksQuestion = getQuestion(page, tasksTitle);
-  await tasksQuestion.locator("textarea").fill(project.tasks);
+  await tasksQuestion.locator("textarea").fill(project.tasks || "");
 }
 
-async function fillDailyCheckin(page, data) {
+async function fillDailyCheckin(page, data, onProgress = () => {}) {
+  onProgress("Navigating to form URL...");
   await page.goto(data.formUrl, { waitUntil: "domcontentloaded" });
 
-  // Wait until the form questions are rendered.
+  onProgress("Waiting for form questions...");
   await getQuestion(page, "Today I will work (hrs)").waitFor({
     state: "visible"
   });
 
-  // Google Forms records the signed-in account when this checkbox is selected.
-  // The form does not expose a separate editable email textbox in its HTML.
+  onProgress("Confirming email inclusion...");
   await ensureAriaChecked(
     page.getByRole("checkbox", {
       name: `Record ${data.email} as the email to be included with my response`,
@@ -98,18 +105,20 @@ async function fillDailyCheckin(page, data) {
     })
   );
 
-  await fillTime(page, "Today I will work (hrs)", data.totalWork);
+  onProgress("Filling total working hours...");
+  await fillTime(page, "Today I will work (hrs)", data.totalWork || "08:30");
 
-  if (!data.projects[0]) {
-    throw new Error("Project 1 data is required.");
+  if (!data.projects || !data.projects[0]) {
+    throw new Error("At least Project 1 data is required.");
   }
 
-  await fillProject(page, data.projects[0], 1);
+  await fillProject(page, data.projects[0], 1, onProgress);
 
   if (data.projects[1]) {
-    await fillProject(page, data.projects[1], 2);
+    await fillProject(page, data.projects[1], 2, onProgress);
   }
 
+  onProgress("Setting 'another project' answer...");
   const anotherProjectQuestion = getQuestion(
     page,
     "You have another project for today?"
@@ -117,12 +126,35 @@ async function fillDailyCheckin(page, data) {
 
   await ensureAriaChecked(
     anotherProjectQuestion.getByRole("radio", {
-      name: data.anotherProject,
+      name: data.anotherProject || "No",
       exact: true
     })
   );
 
-  console.log("Form fields have been filled. Review them in the browser.");
+  onProgress("Moving to Page 2 (Final)...");
+  const nextBtn = page.getByRole("button", { name: "Next", exact: true });
+  await nextBtn.scrollIntoViewIfNeeded();
+  await nextBtn.click();
+
+  // Wait for Section 2 ("Final")
+  await page.getByRole("heading", { name: /^Final/ }).waitFor({ state: "visible" });
+
+  onProgress("Filling 'Any blocker?'...");
+  const blockerQuestion = getQuestion(page, "Any blocker?");
+  await blockerQuestion.scrollIntoViewIfNeeded();
+  await blockerQuestion.locator("textarea, input[type='text']").fill(data.blocker || "None");
+
+  if (data.autoSubmit) {
+    onProgress("Submitting the form...");
+    const submitBtn = page.getByRole("button", { name: "Submit", exact: true });
+    await submitBtn.scrollIntoViewIfNeeded();
+    await submitBtn.click();
+    onProgress("Form successfully submitted!");
+  } else {
+    onProgress("Form fields filled up to Final page. Ready for review/submit.");
+  }
+
+  return { success: true };
 }
 
 module.exports = { fillDailyCheckin };

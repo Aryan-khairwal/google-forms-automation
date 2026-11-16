@@ -5,10 +5,11 @@ async function createBrowserContext() {
   const profilePath = path.resolve(process.cwd(), "google-profile");
 
   // Uses Playwright's bundled Chromium.
-  // The persistent profile keeps your Google sign-in between runs.
+  // viewport: null lets Chromium match the monitor's native window size and prevents canvas clipping.
   const context = await chromium.launchPersistentContext(profilePath, {
     headless: false,
-    viewport: { width: 1440, height: 1000 }
+    viewport: null,
+    args: ["--start-maximized"]
   });
 
   return context;
