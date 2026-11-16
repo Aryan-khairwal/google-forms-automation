@@ -6,55 +6,126 @@ An AI-powered daily check-in automation tool for Evolvan's Google Form using **L
 
 ## Features
 
-- **Natural Language Chat**: Provide brief daily updates (e.g., `FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration`).
-- **LangChain & Google Gemini**: Maps shorthand project names (e.g. `FileAI` → `File AI`, `AI Bid` → `Evolvan-AI Bid Writing`) and converts notes into structured form data.
-- **Smart Defaults**:
+- **Natural Language Chat**: Provide quick daily updates in plain English (e.g. `FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration`).
+- **LangChain & Gemini Agent**: Maps project shorthand to exact Google Form dropdown options (e.g., `FileAI` → `File AI`, `AI Bid` → `Evolvan-AI Bid Writing`).
+- **Smart Office Defaults**:
   - Total working hours default to **8:30** (`08:30:00`).
   - Billable hours default to **planned hours** (unless marked "not billable").
-  - "EB" / "equivalent billable" automatically ticks the **EBH** checkbox.
+  - Mentioning "EB" or "equivalent billable" automatically ticks the **EBH** checkbox.
   - "Any blocker?" defaults to **None**.
 - **Interactive Review & Control**:
   - Live preview card lets you review or edit values before triggering Playwright.
-  - **Auto-Submit Toggle**: Choose whether to automatically submit or keep the browser open for manual inspection.
+  - **Auto-Submit Toggle**: Choose whether to automatically submit on the final page or keep the browser open for manual inspection.
   - Live Playwright log stream in the UI.
 
 ---
 
-## Getting Started
+## Prerequisites
 
-### 1. Install Dependencies
+Before setting up, make sure you have:
+
+1. **Node.js** (v18, v20, or later) installed:
+   ```bash
+   node -v
+   ```
+2. **Google Account** (Evolvan company email to access the form).
+3. **Gemini API Key**: Free API key from [Google AI Studio](https://aistudio.google.com/).
+
+---
+
+## Setup Guide
+
+### 1. Clone & Install Dependencies
+
 ```bash
+git clone <repository-url>
+cd google-form-automation
+
+# Install project dependencies
 npm install
+
+# Install Playwright's Chromium browser
 npx playwright install chromium
 ```
 
-### 2. Configure Gemini API Key
-Create a `.env` file in the root directory (or enter it in the UI Settings modal):
-```env
-GEMINI_API_KEY=AIzaSy...
-GEMINI_MODEL=gemini-2.0-flash
+### 2. Build the Web Interface
+
+Build the React + Tailwind frontend:
+```bash
+npm run build
 ```
+*(Note: If you skip this, the server will also automatically build it on first run).*
 
-*(You can get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/)).*
+### 3. Configure Gemini API Key
 
-### 3. Launch the Application
+You can configure your key in either of two ways:
+
+- **Option A (Via Web UI - Recommended)**: Launch the app (step 4), click **Settings** in the top-right corner, paste your API key, and click Save.
+- **Option B (Via `.env` file)**: Create a `.env` file in the root directory:
+  ```env
+  GEMINI_API_KEY=your_gemini_api_key_here
+  GEMINI_MODEL=gemini-3.8-flash
+  ```
+
+Supported models: `gemini-3.8-flash` (recommended), `gemini-3.8-flash-lite`, `gemini-3.5-flash-lite`.
+
+### 4. Start the Application
+
 ```bash
 npm start
 ```
-Open your browser at **`http://localhost:3001`**.
+
+Open your browser and navigate to:
+**`http://localhost:3001`**
 
 ---
 
-## Scripts
+## First-Time Google Sign-in
 
-- **`npm start`**: Runs the Express backend and serves the React UI at `http://localhost:3001`.
-- **`npm run dev`**: Starts Vite dev server with hot-reload for frontend development.
-- **`npm run build`**: Builds the React UI into the `dist/` directory.
-- **`npm run cli`**: Runs direct headless/terminal Playwright automation without the web UI.
+On your **first automation run**:
+1. Playwright will launch a Chromium browser window navigating to the Google Form.
+2. If prompted with a Google login screen, **sign in to your Evolvan Google account once**.
+3. Your login session is saved locally in the `google-profile/` directory. All subsequent runs will use this session automatically without asking you to sign in again.
+
+> [!NOTE]
+> `google-profile/` is strictly local and listed in `.gitignore`. Never commit or share your profile folder.
 
 ---
 
-## Privacy & Safety
+## Daily Usage
 
-- The `google-profile/` directory keeps your signed-in Google account session locally. It is ignored by `.git`.
-- If `Auto-Submit` is disabled (default), Playwright fills all fields up to the final page and leaves the browser open for you to verify before submitting.
+1. Open **`http://localhost:3001`**.
+2. In the chat, type your work summary. Examples:
+   - `FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration`
+   - `Total 8h, FileAI 4:30 EB frontend fixes, AI Bid 3:30 API testing`
+   - `FileAI 8:30 full day bug fixes and documentation`
+3. Review the generated values in the right-hand **Form Preview Card** (you can edit any field directly if needed).
+4. Set **Auto-Submit**:
+   - **OFF (Default)**: Playwright fills Page 1 and Page 2 and leaves the browser open so you can review before clicking Submit yourself.
+   - **ON**: Playwright fills all fields and clicks Submit automatically.
+5. Click **Confirm & Fill Form with Playwright**.
+6. Watch the real-time Playwright logs as each field is filled!
+
+---
+
+## Available Scripts
+
+| Command | Description |
+| :--- | :--- |
+| `npm start` | Starts the Express server and serves the web UI at `http://localhost:3001` |
+| `npm run dev` | Runs Vite dev server with hot-reload for frontend development |
+| `npm run build` | Builds the React production bundle into `dist/` |
+| `npm run cli` | Runs direct headless/terminal Playwright automation using static config in `src/config/formData.js` |
+
+---
+
+## Troubleshooting
+
+- **"Browser profile is already in use by another instance"**:
+  You already have a Playwright Chromium window open. Close the existing Chromium window before starting a new run.
+- **Footer or buttons cut off**:
+  Chromium runs maximized with native viewport scaling. If you previously zoomed out manually, press **`Ctrl + 0`** in the Chromium window to reset zoom to 100%.
+- **Model 404 / Deprecated Error**:
+  Ensure your `GEMINI_MODEL` is set to `gemini-3.8-flash` or `gemini-3.8-flash-lite` in Settings or `.env`.
+- **Port 3001 already in use**:
+  You can specify a custom port: `PORT=3002 npm start`.

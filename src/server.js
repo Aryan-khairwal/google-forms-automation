@@ -14,8 +14,16 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend assets if built
+// Serve static frontend assets (auto-build if missing)
 const distPath = path.resolve(__dirname, "../dist");
+if (!fs.existsSync(distPath)) {
+  console.log("dist/ folder not found. Building frontend assets...");
+  try {
+    require("node:child_process").execSync("npx vite build", { stdio: "inherit" });
+  } catch (err) {
+    console.error("Failed to auto-build frontend:", err.message);
+  }
+}
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
 }
