@@ -1,0 +1,4 @@
+node_modules/
+google-profile/
+playwright/.cache/
+.env
