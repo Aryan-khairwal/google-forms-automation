@@ -15,7 +15,8 @@ export default function App() {
     try {
       const saved = localStorage.getItem("checkin-quick-prompts");
       return saved ? JSON.parse(saved) : [
-        "FileAI 5:30 UI enhancements, AI Bid 3 hrs EB MCP integration",
+        "File AI 5:30 UI enhancements, AI Bid 3 hrs EB MCP integration",
+        "File AI 5h frontend tasks, Learning 3:30 NB explore AI workflows"
       ];
     } catch {
       return [];
@@ -46,16 +47,16 @@ export default function App() {
             {
               name: "File AI",
               planned: "05:00",
-              billable: "04:30",
-              ebhEquivalent: true,
-              tasks: "Worked on frontend development, fixed UI issues, and reviewed the pending tasks."
+              billable: "05:00",
+              ebhEquivalent: false,
+              tasks: "Work on frontend development, fix UI issues, and review pending tasks."
             },
             {
               name: "Evolvan-AI Bid Writing",
               planned: "03:30",
               billable: "03:30",
-              ebhEquivalent: true,
-              tasks: "Worked on assigned development tasks and bug fixes."
+              ebhEquivalent: false,
+              tasks: "Work on assigned development tasks and test latest changes."
             }
           ]
         });
@@ -108,7 +109,7 @@ export default function App() {
         ...prev,
         {
           role: "assistant",
-          content: data.message || "Form data generated.",
+          content: data.message || "Day plan generated.",
           needsClarification: Boolean(data.needsClarification)
         }
       ]);
@@ -187,9 +188,9 @@ export default function App() {
           </div>
           <div>
             <h1 className="font-bold text-base text-slate-900 leading-tight">
-              Google Form Check-in Agent
+              Google Form Day Plan Agent
             </h1>
-            <p className="hidden text-xs text-slate-400 sm:block">Daily check-in automation</p>
+            <p className="hidden text-xs text-slate-400 sm:block">Morning day plan & check-in automation</p>
           </div>
         </div>
 

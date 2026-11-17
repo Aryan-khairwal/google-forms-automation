@@ -1,5 +1,9 @@
-// Static sample data for the Daily Check-in form.
-// Edit these values before running the automation.
+// Static sample data for the Daily Day Plan / Morning Check-in form.
+// This form is submitted in advance at the start of the day.
+// Defaults:
+// - Total work: 08:30
+// - Billable hours default to planned hours (unless marked as non-billable / NB)
+// - EB (Equivalent Billable) is false by default; true only if explicitly requested
 
 module.exports = {
   formUrl:
@@ -9,7 +13,7 @@ module.exports = {
 
   totalWork: {
     hours: 8,
-    minutes: 0,
+    minutes: 30,
     seconds: 0
   },
 
@@ -25,31 +29,31 @@ module.exports = {
       },
 
       billable: {
-        hours: 4,
-        minutes: 30,
+        hours: 5,
+        minutes: 0,
         seconds: 0
       },
 
-      ebhEquivalent: true,
-      tasks: "Worked on frontend development, fixed UI issues, and reviewed the pending tasks."
+      ebhEquivalent: false,
+      tasks: "Work on frontend development, fix UI issues, and review pending tasks."
     },
     {
       name: "Evolvan-AI Bid Writing",
 
       planned: {
         hours: 3,
-        minutes: 0,
-        seconds: 0
-      },
-
-      billable: {
-        hours: 2,
         minutes: 30,
         seconds: 0
       },
 
-      ebhEquivalent: true,
-      tasks: "Worked on the assigned development tasks and tested the latest changes."
+      billable: {
+        hours: 3,
+        minutes: 30,
+        seconds: 0
+      },
+
+      ebhEquivalent: false,
+      tasks: "Work on assigned development tasks and test latest changes."
     }
   ],
 

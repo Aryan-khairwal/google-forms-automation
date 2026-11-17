@@ -42,8 +42,8 @@ export default function ChatPanel({
             <Sparkles className="w-4 h-4 text-emerald-600" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-800">Describe your day</h2>
-            <p className="text-xs text-slate-400">The form updates after each message</p>
+            <h2 className="text-sm font-bold text-slate-800">Plan your day</h2>
+            <p className="text-xs text-slate-400">The day plan updates after each message</p>
           </div>
         </div>
       </div>
@@ -52,8 +52,10 @@ export default function ChatPanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !loading && (
           <div className="pt-4 sm:pt-8 max-w-md mx-auto">
-            <h3 className="text-lg font-semibold text-slate-800">What's on your plate?</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-500">Write a short summary with your projects, time, and tasks. Choose a hint to get started.</p>
+            <h3 className="text-lg font-semibold text-slate-800">What's your plan for today?</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              Enter your planned projects, hours, and upcoming tasks. Billable hours default to planned hours (use <span className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">NB</span> or <span className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">billable 0</span> for non-billable; <span className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">EB</span> for equivalent billable).
+            </p>
             {quickPrompts.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {quickPrompts.map((prompt, index) => (
@@ -133,7 +135,7 @@ export default function ChatPanel({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Restro 4:30 EB, Assigned Tickets"
+          placeholder="e.g. File AI 5h UI tasks, Learning 3:30 NB study AI workflows"
           className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none transition"
         />
         <button

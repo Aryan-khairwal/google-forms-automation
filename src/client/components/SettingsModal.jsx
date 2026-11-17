@@ -92,7 +92,7 @@ export default function SettingsModal({ isOpen, onClose, currentModel, onSave, q
               ))}
             </div>
             <div className="flex gap-2">
-              <input value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (newPrompt.trim()) { onQuickPromptsChange?.([...quickPrompts, newPrompt.trim()]); setNewPrompt(""); } } }} placeholder="Add a helpful example..." className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500" />
+              <input value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (newPrompt.trim()) { onQuickPromptsChange?.([...quickPrompts, newPrompt.trim()]); setNewPrompt(""); } } }} placeholder="e.g. File AI 5h UI tasks, Learning 3h NB..." className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500" />
               <button type="button" onClick={() => { if (newPrompt.trim()) { onQuickPromptsChange?.([...quickPrompts, newPrompt.trim()]); setNewPrompt(""); } }} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"><Plus className="w-3.5 h-3.5" /> Add</button>
             </div>
           </div>

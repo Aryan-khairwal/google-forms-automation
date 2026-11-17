@@ -136,8 +136,8 @@ app.post("/api/fill-form", async (req, res) => {
     res.json({
       success: true,
       message: autoSubmit
-        ? "Form filled and submitted successfully!"
-        : "Form filled up to Final page! You can review or submit it in the open browser.",
+        ? "Day plan filled and submitted successfully!"
+        : "Day plan filled up to Final page! You can review or submit it in the open browser.",
       logs: latestLogs
     });
   } catch (err) {

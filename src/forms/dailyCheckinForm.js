@@ -72,15 +72,20 @@ async function fillProject(page, project, projectNumber, onProgress) {
   if (onProgress) onProgress(`Filling ${billableTitle}`);
   await fillTime(page, billableTitle, project.billable);
 
-  if (project.ebhEquivalent) {
-    if (onProgress) onProgress(`Checking ${ebhTitle}`);
-    const ebhQuestion = getQuestion(page, ebhTitle);
-    await ensureAriaChecked(
-      ebhQuestion.getByRole("checkbox", {
-        name: "Yes",
-        exact: true
-      })
-    );
+  const ebhQuestion = getQuestion(page, ebhTitle);
+  const ebhCheckbox = ebhQuestion.getByRole("checkbox", {
+    name: "Yes",
+    exact: true
+  });
+  await ebhCheckbox.waitFor({ state: "visible" });
+  const isChecked = (await ebhCheckbox.getAttribute("aria-checked")) === "true";
+
+  if (project.ebhEquivalent && !isChecked) {
+    if (onProgress) onProgress(`Checking ${ebhTitle} (EB Equivalent)`);
+    await ensureAriaChecked(ebhCheckbox, "true");
+  } else if (!project.ebhEquivalent && isChecked) {
+    if (onProgress) onProgress(`Unchecking ${ebhTitle} (EB is false by default)`);
+    await ensureAriaChecked(ebhCheckbox, "false");
   }
 
   if (onProgress) onProgress(`Filling ${tasksTitle}`);

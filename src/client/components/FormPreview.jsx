@@ -27,9 +27,9 @@ export default function FormPreview({
         <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mb-4">
           <Briefcase className="w-8 h-8" />
         </div>
-        <h3 className="font-semibold text-slate-700 text-base mb-1">No Form Data Yet</h3>
+        <h3 className="font-semibold text-slate-700 text-base mb-1">No Day Plan Yet</h3>
         <p className="text-xs text-slate-400 max-w-xs leading-relaxed mb-4">
-          Type instructions in the chat (e.g. <span className="font-mono text-slate-600 bg-slate-100 px-1 py-0.5 rounded">FileAI 5:30 UI enhancements</span>) and the AI will generate the structured form inputs with defaults.
+          Type your day plan in the chat (e.g. <span className="font-mono text-slate-600 bg-slate-100 px-1 py-0.5 rounded">File AI 5:30 UI enhancements, Learning 3h NB</span>) and the AI will generate structured day plan inputs with office defaults.
         </p>
       </div>
     );
@@ -71,8 +71,8 @@ export default function FormPreview({
             <CheckCircle2 className="w-4 h-4 text-teal-600" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-800">Generated Form Inputs</h2>
-            <p className="text-xs text-slate-400">Review or tweak values before running Playwright</p>
+            <h2 className="text-sm font-bold text-slate-800">Generated Day Plan Inputs</h2>
+            <p className="text-xs text-slate-400">Review or tweak your planned day before running Playwright</p>
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export default function FormPreview({
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-slate-700">Projects</h3>
-            <p className="text-xs text-slate-400">Add up to two projects supported by this form.</p>
+            <p className="text-xs text-slate-400">Add up to two projects planned for today.</p>
           </div>
           <button type="button" onClick={addProject} disabled={(formData.projects || []).length >= 2} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40">
             <Plus className="w-3.5 h-3.5" /> Add project
@@ -102,7 +102,7 @@ export default function FormPreview({
         </div>
 
         {(formData.projects || []).length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Add a project to enter your hours and tasks.</div>
+          <div className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Add a project to enter your planned hours and tasks.</div>
         )}
 
         {/* Projects List */}
@@ -190,7 +190,7 @@ export default function FormPreview({
                 value={proj.tasks || ""}
                 onChange={(e) => updateProject(idx, "tasks", e.target.value)}
                 className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
-                placeholder="Description of work done..."
+                placeholder="Description of planned tasks to be done..."
               />
             </div>
           </div>
@@ -255,12 +255,12 @@ export default function FormPreview({
           {running ? (
             <>
               <RotateCw className="w-4 h-4 animate-spin" />
-              <span>Automating Playwright Form...</span>
+              <span>Automating Playwright Day Plan...</span>
             </>
           ) : (
             <>
               <Play className="w-4 h-4 fill-white" />
-              <span>Confirm & Fill Form with Playwright</span>
+              <span>Confirm & Fill Day Plan with Playwright</span>
             </>
           )}
         </button>

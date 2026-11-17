@@ -1,20 +1,25 @@
-# Google Form AI Check-in Automation
+# Google Form AI Day Plan & Check-in Automation
 
-An AI-powered daily check-in automation tool for Evolvan's Google Form using **LangChain**, **Google Gemini**, and **Playwright**, with a modern **React + Tailwind** chat UI.
+An AI-powered morning check-in and day plan automation tool for Evolvan's Google Form using **LangChain**, **Google Gemini**, and **Playwright**, with a modern **React + Tailwind** chat UI.
+
+> [!NOTE]
+> This form is designed for submitting a **Day Plan in advance** (e.g. at the start of the day / morning check-in), not a retrospective end-of-day summary. All tasks and inputs reflect planned upcoming work.
 
 ---
 
 ## Features
 
-- **Natural Language Chat**: Provide quick daily updates in plain English (e.g. `FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration`).
+- **Natural Language Chat**: Provide your upcoming day plan in plain English (e.g. `File AI 5:30 UI enhancements, AI Bid 3 hrs EB MCP integration` or `File AI 5h dev, Learning 3h NB explore AI tools`).
 - **LangChain & Gemini Agent**: Maps project shorthand to exact Google Form dropdown options (e.g., `FileAI` → `File AI`, `AI Bid` → `Evolvan-AI Bid Writing`).
 - **Smart Office Defaults**:
-  - Total working hours default to **8:30** (`08:30:00`).
-  - Billable hours default to **planned hours** (unless marked "not billable").
-  - Mentioning "EB" or "equivalent billable" automatically ticks the **EBH** checkbox.
-  - "Any blocker?" defaults to **None**.
+  - **Advance Day Planning**: Formulates tasks in forward-looking/plan tense ("Work on...", "Develop...", "Review...").
+  - **Total Working Hours**: Defaults to **8:30** (`08:30:00`).
+  - **Billable Hours (Default = Planned Hours)**: By default, billable hours match planned hours.
+  - **Non-Billable (NB / Billable 0)**: If marked as non-billable (e.g. `NB`, `no billable`, `not billable`, `billable 0`), billable hours are automatically set to `00:00`.
+  - **EB (Equivalent Billable)**: **False by default**. Only set to true if explicitly mentioned (`EB`, `EBH`, or `equivalent`).
+  - **Blocker**: Defaults to **None**.
 - **Interactive Review & Control**:
-  - Live preview card lets you review or edit values before triggering Playwright.
+  - Live preview card lets you review or edit planned values before triggering Playwright.
   - **Auto-Submit Toggle**: Choose whether to automatically submit on the final page or keep the browser open for manual inspection.
   - Live Playwright log stream in the UI.
 
@@ -95,15 +100,16 @@ On your **first automation run**:
 ## Daily Usage
 
 1. Open **`http://localhost:3001`**.
-2. In the chat, type your work summary. Examples:
-   - `FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration`
-   - `Total 8h, FileAI 4:30 EB frontend fixes, AI Bid 3:30 API testing`
-   - `FileAI 8:30 full day bug fixes and documentation`
-3. Review the generated values in the right-hand **Form Preview Card** (you can edit any field directly if needed).
+2. In the chat, type your day plan. Examples:
+   - `File AI 5:30 UI enhancements, AI Bid 3 hrs EB MCP integration`
+   - `File AI 5h frontend tasks, Learning 3:30 NB explore AI workflows`
+   - `Total 8h, File AI 4:30 EB frontend fixes, AI Bid 3:30 API testing`
+   - `File AI 8:30 full day bug fixes and documentation`
+3. Review the generated values in the right-hand **Day Plan Preview Card** (you can edit any field directly if needed).
 4. Set **Auto-Submit**:
    - **OFF (Default)**: Playwright fills Page 1 and Page 2 and leaves the browser open so you can review before clicking Submit yourself.
    - **ON**: Playwright fills all fields and clicks Submit automatically.
-5. Click **Confirm & Fill Form with Playwright**.
+5. Click **Confirm & Fill Day Plan with Playwright**.
 6. Watch the real-time Playwright logs as each field is filled!
 
 ---
