@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Sparkles, HelpCircle, ArrowRight } from "lucide-react";
+import { Send, Bot, User, Sparkles, HelpCircle } from "lucide-react";
 
 export default function ChatPanel({
   messages,
   onSendMessage,
   loading,
-  onQuickPrompt
+  onQuickPrompt,
+  quickPrompts = []
 }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
@@ -32,13 +33,6 @@ export default function ChatPanel({
     }
   };
 
-  const quickPrompts = [
-    "FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration",
-    "FileAI 4:30 EB frontend redesign, AI Bid 4h unit tests",
-    "FileAI 8:30 full day bug fixes and documentation",
-    "Total 8h, FileAI 5h UI tasks, AI Bid 3h not billable research"
-  ];
-
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
       {/* Panel Header */}
@@ -48,14 +42,33 @@ export default function ChatPanel({
             <Sparkles className="w-4 h-4 text-emerald-600" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-800">Check-in AI Assistant</h2>
-            <p className="text-xs text-slate-400">Powered by LangChain & Gemini</p>
+            <h2 className="text-sm font-bold text-slate-800">Describe your day</h2>
+            <p className="text-xs text-slate-400">The form updates after each message</p>
           </div>
         </div>
       </div>
 
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && !loading && (
+          <div className="pt-4 sm:pt-8 max-w-md mx-auto">
+            <h3 className="text-lg font-semibold text-slate-800">What's on your plate?</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-500">Write a short summary with your projects, time, and tasks. Choose a hint to get started.</p>
+            {quickPrompts.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {quickPrompts.map((prompt, index) => (
+                  <button
+                    key={`${prompt}-${index}`}
+                    onClick={() => onQuickPrompt(prompt)}
+                    className="max-w-full rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-left text-xs text-emerald-800 transition hover:bg-emerald-100"
+                  >
+                    <span className="line-clamp-2">{prompt}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         {messages.map((msg, index) => {
           const isUser = msg.role === "user";
           return (
@@ -113,26 +126,6 @@ export default function ChatPanel({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Prompts */}
-      <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/40">
-        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-emerald-500" />
-          <span>Quick Example Prompts</span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {quickPrompts.map((qp, idx) => (
-            <button
-              key={idx}
-              onClick={() => onQuickPrompt(qp)}
-              className="text-xs px-2.5 py-1 bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 border border-slate-200 rounded-lg text-slate-600 transition flex items-center gap-1 text-left"
-            >
-              <span className="truncate max-w-[220px]">{qp}</span>
-              <ArrowRight className="w-3 h-3 opacity-40 shrink-0" />
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Input Form */}
       <form onSubmit={handleSubmit} className="p-3 border-t border-slate-200 bg-white flex gap-2 items-center">
         <textarea
@@ -140,7 +133,7 @@ export default function ChatPanel({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="e.g. FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration"
+          placeholder="Restro 4:30 EB, Assigned Tickets"
           className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none transition"
         />
         <button

@@ -3,12 +3,12 @@ import {
   Clock,
   Briefcase,
   CheckCircle2,
-  AlertTriangle,
   Play,
   RotateCw,
   Terminal,
   ShieldCheck,
-  SendHorizontal
+  Plus,
+  Trash2
 } from "lucide-react";
 
 export default function FormPreview({
@@ -47,6 +47,21 @@ export default function FormPreview({
     }
   };
 
+  const addProject = () => {
+    const projects = formData.projects || [];
+    if (projects.length >= 2) return;
+    onUpdateFormData({
+      ...formData,
+      projects: [...projects, { name: availableProjects[0] || "", planned: "00:00", billable: "00:00", ebhEquivalent: false, tasks: "" }],
+      anotherProject: "No"
+    });
+  };
+
+  const removeProject = (idx) => {
+    const projects = (formData.projects || []).filter((_, projectIndex) => projectIndex !== idx);
+    onUpdateFormData({ ...formData, projects, anotherProject: "No" });
+  };
+
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
       {/* Header */}
@@ -76,6 +91,20 @@ export default function FormPreview({
 
       {/* Form Content Scrollable */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700">Projects</h3>
+            <p className="text-xs text-slate-400">Add up to two projects supported by this form.</p>
+          </div>
+          <button type="button" onClick={addProject} disabled={(formData.projects || []).length >= 2} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40">
+            <Plus className="w-3.5 h-3.5" /> Add project
+          </button>
+        </div>
+
+        {(formData.projects || []).length === 0 && (
+          <div className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Add a project to enter your hours and tasks.</div>
+        )}
+
         {/* Projects List */}
         {(formData.projects || []).map((proj, idx) => (
           <div
@@ -88,18 +117,15 @@ export default function FormPreview({
                 Project {idx + 1}
               </span>
 
-              {/* EBH Toggle */}
-              <label className="flex items-center gap-1.5 cursor-pointer text-xs">
-                <input
-                  type="checkbox"
-                  checked={Boolean(proj.ebhEquivalent)}
-                  onChange={(e) => updateProject(idx, "ebhEquivalent", e.target.checked)}
-                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className={`font-medium ${proj.ebhEquivalent ? "text-emerald-700 font-semibold" : "text-slate-500"}`}>
-                  EB Equivalent
-                </span>
-              </label>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                  <input type="checkbox" checked={Boolean(proj.ebhEquivalent)} onChange={(e) => updateProject(idx, "ebhEquivalent", e.target.checked)} className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                  <span className={`font-medium ${proj.ebhEquivalent ? "text-emerald-700 font-semibold" : "text-slate-500"}`}>EB Equivalent</span>
+                </label>
+                <button type="button" onClick={() => removeProject(idx)} className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 transition hover:text-rose-600" aria-label={`Remove project ${idx + 1}`}>
+                  <Trash2 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Remove</span>
+                </button>
+              </div>
             </div>
 
             {/* Project Select */}

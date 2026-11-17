@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Key, Sparkles, Check, X, AlertCircle } from "lucide-react";
+import { Key, Sparkles, Check, X, AlertCircle, Plus, Trash2 } from "lucide-react";
 
-export default function SettingsModal({ isOpen, onClose, currentModel, onSave }) {
+export default function SettingsModal({ isOpen, onClose, currentModel, onSave, quickPrompts = [], onQuickPromptsChange }) {
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState(currentModel || "gemini-3.8-flash");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [newPrompt, setNewPrompt] = useState("");
 
   if (!isOpen) return null;
 
@@ -39,7 +40,7 @@ export default function SettingsModal({ isOpen, onClose, currentModel, onSave })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
         <div className="px-6 py-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-white/20 rounded-lg">
@@ -74,6 +75,26 @@ export default function SettingsModal({ isOpen, onClose, currentModel, onSave })
             <p className="text-xs text-slate-400 mt-1.5">
               Get your free key from Google AI Studio (aistudio.google.com).
             </p>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Chat hints</label>
+            </div>
+            <p className="text-xs text-slate-400 mb-3">These small suggestion pills appear before the first message.</p>
+            <div className="space-y-2 mb-3">
+              {quickPrompts.map((prompt, index) => (
+                <div key={`${prompt}-${index}`} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                  <span className="min-w-0 flex-1 break-words">{prompt}</span>
+                  <button type="button" onClick={() => onQuickPromptsChange?.(quickPrompts.filter((_, promptIndex) => promptIndex !== index))} className="shrink-0 text-slate-400 hover:text-rose-600" aria-label={`Remove hint ${index + 1}`}><Trash2 className="w-4 h-4" /></button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (newPrompt.trim()) { onQuickPromptsChange?.([...quickPrompts, newPrompt.trim()]); setNewPrompt(""); } } }} placeholder="Add a helpful example..." className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500" />
+              <button type="button" onClick={() => { if (newPrompt.trim()) { onQuickPromptsChange?.([...quickPrompts, newPrompt.trim()]); setNewPrompt(""); } }} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"><Plus className="w-3.5 h-3.5" /> Add</button>
+            </div>
           </div>
 
           <div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sparkles, Settings, CheckCircle2, AlertCircle, Key, RefreshCw } from "lucide-react";
+import { Sparkles, Settings, CheckCircle2, AlertCircle } from "lucide-react";
 import ChatPanel from "./components/ChatPanel";
 import FormPreview from "./components/FormPreview";
 import SettingsModal from "./components/SettingsModal";
@@ -10,17 +10,21 @@ export default function App() {
   const [currentModel, setCurrentModel] = useState("gemini-3.8-flash");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "👋 Hi Aryan! I'm your Google Form daily check-in assistant.\n\nTell me what you worked on today (e.g. \"FileAI 5:30 UI enhancements, AI Bid 3 hrs MCP Integration\"). I will parse your input, set your office defaults (8:30 total hours, billable = planned, no blockers), and prepare the form for you."
+  const [messages, setMessages] = useState([]);
+  const [quickPrompts, setQuickPrompts] = useState(() => {
+    try {
+      const saved = localStorage.getItem("checkin-quick-prompts");
+      return saved ? JSON.parse(saved) : [
+        "FileAI 5:30 UI enhancements, AI Bid 3 hrs EB MCP integration",
+      ];
+    } catch {
+      return [];
     }
-  ]);
+  });
 
   const [loadingChat, setLoadingChat] = useState(false);
   const [formData, setFormData] = useState(null);
-  const [autoSubmit, setAutoSubmit] = useState(false);
+  const [autoSubmit, setAutoSubmit] = useState(true);
   const [runningAutomation, setRunningAutomation] = useState(false);
   const [automationLogs, setAutomationLogs] = useState([]);
   const [toast, setToast] = useState(null);
@@ -68,6 +72,10 @@ export default function App() {
   useEffect(() => {
     fetchConfig();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("checkin-quick-prompts", JSON.stringify(quickPrompts));
+  }, [quickPrompts]);
 
   const showToast = (type, text) => {
     setToast({ type, text });
@@ -170,9 +178,9 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-100 text-slate-800">
+    <div className="flex h-[100dvh] flex-col bg-slate-100 text-slate-800">
       {/* Top Navbar */}
-      <header className="h-16 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between shrink-0 shadow-xs">
+      <header className="min-h-16 bg-white border-b border-slate-200/80 px-4 py-3 sm:px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold shadow-sm shadow-emerald-500/20">
             <Sparkles className="w-5 h-5" />
@@ -181,9 +189,7 @@ export default function App() {
             <h1 className="font-bold text-base text-slate-900 leading-tight">
               Google Form Check-in Agent
             </h1>
-            <p className="text-xs text-slate-400">
-              LangChain Gemini 3.8 / 3.5 • Playwright Automation
-            </p>
+            <p className="hidden text-xs text-slate-400 sm:block">Daily check-in automation</p>
           </div>
         </div>
 
@@ -205,19 +211,20 @@ export default function App() {
       </header>
 
       {/* Main Workspace (Split View) */}
-      <main className="flex-1 overflow-hidden p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-7xl w-full mx-auto">
+      <main className="flex-1 w-full max-w-7xl mx-auto p-3 sm:p-5 lg:min-h-0 lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
         {/* Left: Chat Panel (5 Cols) */}
-        <section className="lg:col-span-5 h-full overflow-hidden">
+        <section className="h-[520px] lg:col-span-5 lg:h-full lg:min-h-0 overflow-hidden">
           <ChatPanel
             messages={messages}
             onSendMessage={handleSendMessage}
             loading={loadingChat}
             onQuickPrompt={(text) => handleSendMessage(text)}
+            quickPrompts={quickPrompts}
           />
         </section>
 
         {/* Right: Form Data Preview & Controls (7 Cols) */}
-        <section className="lg:col-span-7 h-full overflow-hidden">
+        <section className="min-h-[620px] lg:col-span-7 lg:h-full lg:min-h-0 overflow-hidden">
           <FormPreview
             formData={formData}
             onUpdateFormData={setFormData}
@@ -236,6 +243,8 @@ export default function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         currentModel={currentModel}
+        quickPrompts={quickPrompts}
+        onQuickPromptsChange={setQuickPrompts}
         onSave={(newModel) => {
           setHasApiKey(true);
           setCurrentModel(newModel);
