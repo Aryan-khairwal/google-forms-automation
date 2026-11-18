@@ -52,7 +52,7 @@ export default function ChatPanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !loading && (
           <div className="pt-4 sm:pt-8 max-w-md mx-auto">
-            <h3 className="text-lg font-semibold text-slate-800">What's your plan for today?</h3>
+            <h3 className="text-lg font-semibold text-slate-800">What's on your plate today?</h3>
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Enter your planned projects, hours, and upcoming tasks. Billable hours default to planned hours (use <span className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">NB</span> or <span className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">billable 0</span> for non-billable; <span className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">EB</span> for equivalent billable).
             </p>
