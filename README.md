@@ -29,7 +29,7 @@ An AI-powered morning check-in and day plan automation tool for Evolvan's Google
 
 Before setting up, make sure you have:
 
-1. **Node.js** (v18, v20, or later) installed:
+1. **Node.js** (20.19+ on Node 20, or 22.12+; Node 22 or 24 recommended) installed:
    ```bash
    node -v
    ```
@@ -46,14 +46,25 @@ Before setting up, make sure you have:
 git clone <repository-url>
 cd google-form-automation
 
-# Install project dependencies
-npm install
+# Install the exact locked project dependencies
+npm ci
 
-# Install Playwright's Chromium browser
-npx playwright install chromium
+# Install Playwright's Chromium browser and Linux system dependencies
+# Installing system dependencies may request administrator privileges.
+npm run setup:browser
 ```
 
 ### 2. Build the Web Interface
+
+On Linux, use a Playwright-supported Debian or Ubuntu release on x86-64 or
+ARM64 with a graphical desktop for Google sign-in and manual form review.
+See [Playwright's system requirements](https://playwright.dev/docs/intro#system-requirements)
+for supported releases. Other distributions may require manual browser library
+installation. Alpine/musl is not supported by the bundled Playwright browsers;
+removing `libc` fields from the lockfile does not change browser compatibility.
+Keep those fields so npm can select the matching native packages. Install
+dependencies separately on each machine; do not copy `node_modules/` between
+systems.
 
 Build the React + Tailwind frontend:
 ```bash
@@ -121,6 +132,7 @@ On your **first automation run**:
 | `npm start` | Starts the Express server and serves the web UI at `http://localhost:3001` |
 | `npm run dev` | Runs Vite dev server with hot-reload for frontend development |
 | `npm run build` | Builds the React production bundle into `dist/` |
+| `npm run setup:browser` | Installs Chromium and its system dependencies on supported Linux distributions |
 | `npm run cli` | Runs direct headless/terminal Playwright automation using static config in `src/config/formData.js` |
 
 ---

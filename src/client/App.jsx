@@ -25,7 +25,7 @@ export default function App() {
 
   const [loadingChat, setLoadingChat] = useState(false);
   const [formData, setFormData] = useState(null);
-  const [autoSubmit, setAutoSubmit] = useState(true);
+  const [autoSubmit, setAutoSubmit] = useState(false);
   const [runningAutomation, setRunningAutomation] = useState(false);
   const [automationLogs, setAutomationLogs] = useState([]);
   const [toast, setToast] = useState(null);

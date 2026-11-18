@@ -9,8 +9,6 @@ module.exports = {
   formUrl:
     "https://docs.google.com/forms/d/e/1FAIpQLSfVhvb03ottVNomh-i019XlayYP_2fQ4s2q7b5jd-EHf1a_JA/viewform",
 
-  email: "aryank@evolvan.com",
-
   totalWork: {
     hours: 8,
     minutes: 30,

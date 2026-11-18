@@ -35,7 +35,6 @@ const AVAILABLE_PROJECTS = [
 const DEFAULT_CONFIG = {
   formUrl:
     "https://docs.google.com/forms/d/e/1FAIpQLSfVhvb03ottVNomh-i019XlayYP_2fQ4s2q7b5jd-EHf1a_JA/viewform",
-  email: "aryank@evolvan.com",
   totalWork: "08:30",
   blocker: "None",
   anotherProject: "No",
@@ -126,10 +125,9 @@ async function processUserMessage(messages, apiKey, modelName = "gemini-3.8-flas
   try {
     const parsed = JSON.parse(cleanedText);
     
-    // Ensure formUrl, email, and safe defaults are present
+    // Ensure formUrl and safe defaults are present
     if (parsed.formData) {
       parsed.formData.formUrl = DEFAULT_CONFIG.formUrl;
-      parsed.formData.email = DEFAULT_CONFIG.email;
 
       if (Array.isArray(parsed.formData.projects)) {
         parsed.formData.projects = parsed.formData.projects.map((proj) => ({

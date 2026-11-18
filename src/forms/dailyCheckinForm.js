@@ -105,8 +105,7 @@ async function fillDailyCheckin(page, data, onProgress = () => {}) {
   onProgress("Confirming email inclusion...");
   await ensureAriaChecked(
     page.getByRole("checkbox", {
-      name: `Record ${data.email} as the email to be included with my response`,
-      exact: true
+      name: /^Record\s+\S+@\S+\s+as the email to be included with my response$/
     })
   );
 
