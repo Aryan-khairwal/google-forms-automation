@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.googleformsassistant.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <name>AutoForm</name>
+  <summary>Prepare Google Forms for internal office use</summary>
+  <description>
+    <p>AutoForm helps authorized office team members prepare Daily Check-in, Daily Status, and Leave Application forms.</p>
+  </description>
+  <developer id="com.googleformsassistant">
+    <name>AutoForm contributors</name>
+  </developer>
+  <url type="homepage">https://github.com/Aryan-khairwal/google-forms-automation</url>
+  <launchable type="desktop-id">google-forms-assistant.desktop</launchable>
+</component>

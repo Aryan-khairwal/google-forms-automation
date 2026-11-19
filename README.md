@@ -2,6 +2,8 @@
 
 An AI-powered morning check-in and day plan automation tool for Evolvan's Google Form. It uses **Gemini** or **ChatGPT** to generate a plan and **Playwright** to fill the form, with a **React + Tailwind** chat UI.
 
+AutoForm is licensed for authorized internal office use. See the [AutoForm Internal Use License](LICENSE).
+
 > [!NOTE]
 > This form is designed for submitting a **Day Plan in advance** (e.g. at the start of the day / morning check-in), not a retrospective end-of-day summary. All tasks and inputs reflect planned upcoming work.
 
@@ -29,7 +31,7 @@ An AI-powered morning check-in and day plan automation tool for Evolvan's Google
 
 The Electron app keeps the same chat, form previews, and Google Forms workflows. It bundles the interface, Node.js, and the Chromium browser used by Playwright. Google Forms opens in a separate browser window for sign-in and review.
 
-Download the installer for your operating system from [GitHub Releases](https://github.com/Aryan-khairwal/google-forms-automation/releases). On Windows x64, run the `.exe` and open **AutoForm** from the Start menu. On Ubuntu or Debian x86-64, install the `.deb` with APT and open **AutoForm** from the applications menu.
+Authorized office team members can download the installer for their operating system from [GitHub Releases](https://github.com/Aryan-khairwal/google-forms-automation/releases). On Windows x64, run the `.exe` and open **AutoForm** from the Start menu. On Ubuntu or Debian x86-64, install the `.deb` with APT and open **AutoForm** from the applications menu.
 
 ```bash
 sudo apt install ./autoform-1.0.3-amd64.deb
@@ -104,7 +106,7 @@ npm run build
 
 ### 3. Configure an AI Provider
 
-Start the app and open **Settings**. Choose **Gemini** or **ChatGPT** under **AI provider** and enter its API key. **Test API key** sends a short request to the selected model before you click **Save settings**. To switch providers later, select the other provider and save. Each provider keeps its own key and model. When you send a message, the selected provider receives the current chat and its day-plan preview.
+Start the app and open **Settings**. Choose **Gemini** or **ChatGPT** under **AI provider** and enter its API key. Before you click **Save settings**, use **Test API key**. For Gemini it checks access to the selected model, and for ChatGPT it sends a short test prompt. To switch providers later, select the other provider and save. Each provider keeps its own key and model. When you send a message, the selected provider receives the current chat and its day-plan preview.
 
 You can also set these values in `.env` in the project directory. Only the active provider needs an API key.
 
