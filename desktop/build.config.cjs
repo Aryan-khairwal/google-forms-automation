@@ -20,6 +20,7 @@ module.exports = {
     homepage: "https://github.com/Aryan-khairwal/google-forms-automation"
   },
   files: [
+    "LICENSE",
     "desktop/*.cjs",
     "!desktop/build.config.cjs",
     "assets/branding/autoform-icon.png",
@@ -37,6 +38,11 @@ module.exports = {
   deb: {
     compression: "zst",
     maintainer: "AutoForm <local@localhost>",
+    fpm: [
+      "--license", "LicenseRef-proprietary",
+      "desktop/com.googleformsassistant.desktop.metainfo.xml=/usr/share/metainfo/com.googleformsassistant.desktop.metainfo.xml",
+      "LICENSE=/usr/share/doc/google-form-automation/copyright"
+    ],
     depends: [
       "libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils",
       "libatspi2.0-0", "libuuid1", "libsecret-1-0", "libgbm1", "libasound2t64 | libasound2"
