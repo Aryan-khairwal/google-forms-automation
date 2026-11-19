@@ -16,7 +16,8 @@ const { PROVIDERS, getActiveProvider, getApiKey, getModel, getPublicSettings } =
 
 const app = express();
 const MODEL_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/;
-const API_KEY_PATTERN = /^[A-Za-z0-9_-]+$/;
+const INVALID_API_KEY_CHARACTER = /[^A-Za-z0-9._-]/;
+const API_KEY_FORMAT_ERROR = "API keys can contain letters, numbers, periods, underscores, and hyphens.";
 const formHandlers = {
   checkin: { fill: fillDailyCheckin, validate: getCheckinQuestion },
   status: { fill: fillDailyStatus, validate: getStatusValidationError },
@@ -83,8 +84,8 @@ app.post("/api/chat", async (req, res) => {
   if (typeof provider !== "string" || !Object.hasOwn(PROVIDERS, provider)) {
     return res.status(400).json({ error: "Choose Gemini or ChatGPT." });
   }
-  if (apiKey && (typeof apiKey !== "string" || !API_KEY_PATTERN.test(apiKey))) {
-    return res.status(400).json({ error: "Enter a valid API key without spaces." });
+  if (apiKey && !hasValidApiKeyFormat(apiKey)) {
+    return res.status(400).json({ error: API_KEY_FORMAT_ERROR });
   }
   if (model && (typeof model !== "string" || !MODEL_PATTERN.test(model))) {
     return res.status(400).json({ error: "Enter a valid model name." });
@@ -111,12 +112,16 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
+function hasValidApiKeyFormat(apiKey) {
+  return typeof apiKey === "string" && !INVALID_API_KEY_CHARACTER.test(apiKey);
+}
+
 function validateProviderSettings(provider, apiKey, model) {
   if (typeof provider !== "string" || !Object.hasOwn(PROVIDERS, provider)) {
     return "Choose Gemini or ChatGPT.";
   }
-  if (typeof apiKey !== "string" || (apiKey && !API_KEY_PATTERN.test(apiKey))) {
-    return "Enter a valid API key without spaces.";
+  if (!hasValidApiKeyFormat(apiKey)) {
+    return API_KEY_FORMAT_ERROR;
   }
   if (model !== undefined && (typeof model !== "string" || !MODEL_PATTERN.test(model))) {
     return "Enter a valid model name.";

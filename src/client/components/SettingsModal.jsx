@@ -182,7 +182,9 @@ export default function SettingsModal({ onClose, activeProvider, providers, onSa
               {testing ? "Testing API key…" : "Test API key"}
             </button>
             <p id="test-key-details" className="mt-1.5 text-xs text-slate-500">
-              Sends a short request to the selected model. This may use API quota.
+              {provider === "gemini"
+                ? "Checks your key and access to the selected Gemini model."
+                : "Sends a short request to the selected model. This may use API quota."}
             </p>
             <div aria-live="polite">
               {keyTest && (
