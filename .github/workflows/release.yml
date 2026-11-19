@@ -1,0 +1,118 @@
+name: Release AutoForm
+
+on:
+  push:
+    branches:
+      - 'release/v*'
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.sha }}
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            runner: ubuntu-24.04
+          - platform: windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Check release version
+        shell: bash
+        run: node -e 'if ("v" + require("./package.json").version !== process.env.GITHUB_REF_NAME.replace(/^release\//, "")) throw new Error("The release ref must match the package version.");'
+      - run: npm ci
+      - name: Install Linux build and browser dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot zstd
+          npx playwright install --with-deps chromium
+      - name: Run tests
+        if: matrix.platform == 'linux'
+        run: node --test
+      - name: Build Linux installer
+        if: matrix.platform == 'linux'
+        run: npm run build:linux
+      - name: Build Windows installer
+        if: matrix.platform == 'windows'
+        env:
+          WIN_CSC_LINK: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
+        run: npm run build:windows
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.platform }}
+          if-no-files-found: error
+          path: |
+            release/*.deb
+            release/*.exe
+            release/*.exe.blockmap
+            release/latest*.yml
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          path: installers
+      - name: Verify and publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          linux=(installers/linux/*.deb)
+          windows=(installers/windows/*.exe)
+          [[ ${#linux[@]} -eq 1 && ${#windows[@]} -eq 1 ]]
+
+          tag=${GITHUB_REF_NAME#release/}
+          version=${tag#v}
+          linux_manifest=installers/linux/latest-linux.yml
+          windows_manifest=installers/windows/latest.yml
+          blockmap="${windows[0]}.blockmap"
+          test -s "$blockmap"
+
+          verify_manifest() {
+            local manifest=$1 installer=$2
+            grep -Fx "version: $version" "$manifest"
+            grep -Fx "path: $(basename "$installer")" "$manifest"
+            local checksum
+            checksum=$(openssl dgst -sha512 -binary "$installer" | openssl base64 -A)
+            grep -Fx "sha512: $checksum" "$manifest"
+          }
+          verify_manifest "$linux_manifest" "${linux[0]}"
+          verify_manifest "$windows_manifest" "${windows[0]}"
+
+          if [[ "$GITHUB_REF_TYPE" == branch ]]; then
+            if tag_commit=$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha); then
+              [[ "$tag_commit" == "$GITHUB_SHA" ]]
+            else
+              gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$tag" -f sha="$GITHUB_SHA" >/dev/null
+            fi
+          fi
+
+          if release=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft); then
+            [[ "$release" == true ]]
+          else
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag --draft --generate-notes --title "AutoForm $version"
+          fi
+          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber \
+            "${linux[0]}" "$linux_manifest" "${windows[0]}" "$windows_manifest" "$blockmap"
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --latest

@@ -1,8 +1,9 @@
 {
   "name": "google-form-automation",
-  "version": "1.0.0",
+  "version": "1.0.3",
+  "desktopName": "google-forms-assistant.desktop",
   "private": true,
-  "description": "Playwright automation for the Daily Check-in Google Form",
+  "description": "An assistant for Daily Check-in, Daily Status, and Leave Application Google Forms",
   "main": "src/index.js",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -12,19 +13,28 @@
     "cli": "node src/index.js",
     "build": "vite build",
     "dev": "vite",
+    "desktop": "npm run build && electron ./desktop/main.cjs",
+    "build:linux": "npm run build && playwright install chromium --no-shell && electron-builder --config desktop/build.config.cjs --linux deb --publish never",
+    "build:windows": "npm run build && playwright install chromium --no-shell && electron-builder --config desktop/build.config.cjs --win nsis --x64 --publish never",
     "setup:browser": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "@langchain/core": "^1.4.1",
     "@langchain/google-genai": "^2.3.6",
     "@vitejs/plugin-react": "^6.3.0",
-    "cors": "^2.8.6",
     "dotenv": "^18.0.10",
+    "electron-updater": "6.8.11",
     "express": "^5.3.0",
     "lucide-react": "^1.73.0",
     "playwright": "^1.56.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "vite": "^8.3.8"
+  },
+  "devDependencies": {
+    "@fontsource/plus-jakarta-sans": "5.3.0",
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0",
+    "tailwindcss": "3.4.19"
   }
 }

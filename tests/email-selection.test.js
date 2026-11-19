@@ -14,10 +14,12 @@ test("records the signed-in user's email even when supplied data names another a
         <div role="listitem"><h2>Today I will work (hrs)</h2>
         <input aria-label="Hours"><input aria-label="Minutes"><input aria-label="Seconds"></div>`
     }));
-    // Stop after email and total hours, before the project-filling stage.
+    // Stop as soon as the automation has finished selecting the email.
     await assert.rejects(fillDailyCheckin(page, {
-      formUrl: "https://form.test/", email: "original-author@example.com", autoSubmit: false
-    }), /At least Project 1 data is required/);
+      formUrl: "https://form.test/", email: "original-author@example.com", projects: [{ name: "File AI" }]
+    }, (message) => {
+      if (message === "Filling total working hours...") throw new Error("Email selection complete");
+    }), /Email selection complete/);
     assert.equal(await page.getByRole("checkbox").isChecked(), true);
   } finally {
     await browser.close();

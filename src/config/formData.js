@@ -53,9 +53,5 @@ module.exports = {
       ebhEquivalent: false,
       tasks: "Work on assigned development tasks and test latest changes."
     }
-  ],
-
-  // This form has a Project 2 section and then asks whether there is
-  // another project for today. Use "Yes" or "No".
-  anotherProject: "No"
+  ]
 };
