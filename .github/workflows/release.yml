@@ -111,7 +111,22 @@ jobs:
           if release=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft); then
             [[ "$release" == true ]]
           else
-            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag --draft --generate-notes --title "AutoForm $version"
+            # GitHub CLI verifies tags through GraphQL, where new refs can take time to appear.
+            delay=2
+            for attempt in 1 2 3 4 5 6; do
+              if output=$(gh release create "$tag" --repo "$GITHUB_REPOSITORY" \
+                  --verify-tag --draft --generate-notes --title "AutoForm $version" 2>&1); then
+                printf '%s\n' "$output"
+                break
+              fi
+              if [[ "$output" != *'aborting due to --verify-tag flag'* || "$attempt" == 6 ]]; then
+                printf '%s\n' "$output" >&2
+                exit 1
+              fi
+              printf 'Waiting %s seconds for GitHub to resolve %s.\n' "$delay" "$tag"
+              sleep "$delay"
+              delay=$((delay * 2))
+            done
           fi
           gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber \
             "${linux[0]}" "$linux_manifest" "${windows[0]}" "$windows_manifest" "$blockmap"
