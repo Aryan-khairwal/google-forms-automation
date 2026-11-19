@@ -204,15 +204,13 @@ async function requestOpenAi(apiKey, request, timeoutMs = 60_000) {
 }
 
 async function testProviderApiKey(provider, apiKey, modelName) {
-  const prompt = "Reply with OK.";
   const timeoutMs = 20_000;
-  const maxTokens = 32;
 
   if (provider === "openai") {
     const data = await requestOpenAi(apiKey, {
       model: modelName,
-      input: prompt,
-      max_output_tokens: maxTokens
+      input: "Reply with OK.",
+      max_output_tokens: 32
     }, timeoutMs);
     if (data.status !== "completed" &&
         !(data.status === "incomplete" && data.incomplete_details?.reason === "max_output_tokens")) {
@@ -222,20 +220,18 @@ async function testProviderApiKey(provider, apiKey, modelName) {
   }
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}`,
     {
-      method: "POST",
-      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+      method: "GET",
+      headers: { "x-goog-api-key": apiKey },
       redirect: "error",
-      signal: AbortSignal.timeout(timeoutMs),
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens }
-      })
+      signal: AbortSignal.timeout(timeoutMs)
     }
   );
   const data = await readProviderResponse(response, "gemini");
-  if (!data.candidates?.length) throw new Error("Gemini did not complete the test");
+  if (typeof data?.name !== "string" || !data.name.startsWith("models/")) {
+    throw new Error("Gemini did not return model information");
+  }
 }
 
 async function getOpenAiResponse(messages, apiKey, modelName, agent) {

@@ -1,6 +1,6 @@
 {
   "name": "google-form-automation",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "desktopName": "google-forms-assistant.desktop",
   "private": true,
   "description": "An assistant for Daily Check-in, Daily Status, and Leave Application Google Forms",
