@@ -3,3 +3,5 @@ google-profile/
 playwright/.cache/
 .env
 dist/
+release/
+.daily-checkin-date

@@ -27,20 +27,15 @@ function parseTime(time) {
   return { hours: 0, minutes: 0, seconds: 0 };
 }
 
-async function fillTime(page, questionTitle, rawTime) {
+async function fillTime(page, questionTitle, rawTime, { allowBlank = false } = {}) {
   const time = parseTime(rawTime);
+  const blank = allowBlank && rawTime === "";
   const question = getQuestion(page, questionTitle);
   await question.waitFor({ state: "visible" });
 
-  await question
-    .locator('input[aria-label="Hours"]')
-    .fill(String(time.hours).padStart(2, "0"));
-  await question
-    .locator('input[aria-label="Minutes"]')
-    .fill(String(time.minutes).padStart(2, "0"));
-  await question
-    .locator('input[aria-label="Seconds"]')
-    .fill(String(time.seconds).padStart(2, "0"));
+  for (const [label, value] of [["Hours", time.hours], ["Minutes", time.minutes], ["Seconds", time.seconds]]) {
+    await question.locator(`input[aria-label="${label}"]`).fill(blank ? "" : String(value).padStart(2, "0"));
+  }
 }
 
 module.exports = { fillTime, parseTime };

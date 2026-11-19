@@ -1,59 +1,25 @@
 const { getQuestion } = require("../utils/getQuestion");
 const { fillTime } = require("../utils/fillTime");
+const { normalizeTaskText } = require("../utils/normalizeTaskText");
+const { maxProjects } = require("../config/dayPlan.json");
 
-async function ensureAriaChecked(locator, desiredState = "true") {
-  await locator.waitFor({ state: "visible" });
+const { ensureAriaChecked, selectOption, advanceToSection, confirmEmail, finishForm } = require("./googleFormControls");
 
-  const currentState = await locator.getAttribute("aria-checked");
+const FIRST_SECTION_PROJECTS = 2;
 
-  if (currentState === desiredState) {
-    return;
+function getProjectValidationError(projects) {
+  if (!Array.isArray(projects) || !projects[0]) {
+    return "At least Project 1 data is required.";
   }
-
-  await locator.click();
-
-  // Wait until Google Forms updates the checkbox/radio state.
-  const start = Date.now();
-  while (Date.now() - start < 5000) {
-    if ((await locator.getAttribute("aria-checked")) === desiredState) {
-      return;
+  if (projects.length > maxProjects) {
+    return `The form supports up to ${maxProjects} projects.`;
+  }
+  for (const [index, project] of projects.entries()) {
+    if (!project || typeof project !== "object" || Array.isArray(project)) {
+      return `Project ${index + 1} data is required.`;
     }
-    await locator.page().waitForTimeout(100);
   }
-}
-
-async function selectProject(page, questionTitle, projectName) {
-  const question = getQuestion(page, questionTitle);
-  const listbox = question.getByRole("listbox");
-
-  await question.scrollIntoViewIfNeeded();
-
-  // If the listbox is not open, click to open it
-  const isExpanded = await listbox.getAttribute("aria-expanded");
-  if (isExpanded !== "true") {
-    await listbox.click();
-  }
-
-  // Google Forms uses custom listboxes. We scope getByRole("option")
-  // to this specific question to avoid strict mode violations
-  // when multiple project dropdowns exist on the form.
-  const option = question.getByRole("option", {
-    name: projectName,
-    exact: true
-  });
-  await option.waitFor({ state: "visible" });
-  await option.click();
-
-  // Brief pause to allow Google Forms to register the click and update
-  await page.waitForTimeout(300);
-
-  // If the dropdown remains open (for instance, when the selected option
-  // was already pre-selected by Google Forms autosave), dismiss it with Escape
-  // so it does not stay open and overlay/block the subsequent inputs.
-  if ((await listbox.getAttribute("aria-expanded")) === "true") {
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
-  }
+  return null;
 }
 
 async function fillProject(page, project, projectNumber, onProgress) {
@@ -64,13 +30,13 @@ async function fillProject(page, project, projectNumber, onProgress) {
   const tasksTitle = `Tasks to be done (${projectNumber})`;
 
   if (onProgress) onProgress(`Selecting ${projectTitle}: ${project.name}`);
-  await selectProject(page, projectTitle, project.name);
+  await selectOption(page, projectTitle, project.name);
 
   if (onProgress) onProgress(`Filling ${plannedTitle}`);
   await fillTime(page, plannedTitle, project.planned);
 
   if (onProgress) onProgress(`Filling ${billableTitle}`);
-  await fillTime(page, billableTitle, project.billable);
+  await fillTime(page, billableTitle, project.billable ?? project.planned, { allowBlank: true });
 
   const ebhQuestion = getQuestion(page, ebhTitle);
   const ebhCheckbox = ebhQuestion.getByRole("checkbox", {
@@ -90,10 +56,26 @@ async function fillProject(page, project, projectNumber, onProgress) {
 
   if (onProgress) onProgress(`Filling ${tasksTitle}`);
   const tasksQuestion = getQuestion(page, tasksTitle);
-  await tasksQuestion.locator("textarea").fill(project.tasks || "");
+  await tasksQuestion.locator("textarea").fill(normalizeTaskText(project.tasks));
+}
+
+async function answerAnotherProject(page, section, answer, onProgress) {
+  onProgress(`Answering "You have another project for today?" on ${section}: ${answer}`);
+  const question = getQuestion(page, "You have another project for today?");
+  const radio = question.getByRole("radio", { name: answer, exact: true });
+
+  try {
+    await ensureAriaChecked(radio);
+  } catch (error) {
+    throw new Error(`Could not select "${answer}" for the additional project question on ${section}.`, { cause: error });
+  }
 }
 
 async function fillDailyCheckin(page, data, onProgress = () => {}) {
+  const { projects } = data;
+  const validationError = getProjectValidationError(projects);
+  if (validationError) throw new Error(validationError);
+
   onProgress("Navigating to form URL...");
   await page.goto(data.formUrl, { waitUntil: "domcontentloaded" });
 
@@ -102,63 +84,34 @@ async function fillDailyCheckin(page, data, onProgress = () => {}) {
     state: "visible"
   });
 
-  onProgress("Confirming email inclusion...");
-  await ensureAriaChecked(
-    page.getByRole("checkbox", {
-      name: /^Record\s+\S+@\S+\s+as the email to be included with my response$/
-    })
-  );
+  await confirmEmail(page, onProgress);
 
   onProgress("Filling total working hours...");
   await fillTime(page, "Today I will work (hrs)", data.totalWork || "08:30");
 
-  if (!data.projects || !data.projects[0]) {
-    throw new Error("At least Project 1 data is required.");
+  let currentSection = "Projects 1–2";
+  for (const [index, project] of projects.entries()) {
+    const projectNumber = index + 1;
+    if (projectNumber > FIRST_SECTION_PROJECTS) {
+      const nextSection = `Project ${projectNumber}`;
+      await answerAnotherProject(page, currentSection, "Yes", onProgress);
+      await advanceToSection(
+        page, currentSection, nextSection, getQuestion(page, `Hours Planned (${projectNumber})`), onProgress
+      );
+      currentSection = nextSection;
+    }
+    await fillProject(page, project, projectNumber, onProgress);
   }
 
-  await fillProject(page, data.projects[0], 1, onProgress);
-
-  if (data.projects[1]) {
-    await fillProject(page, data.projects[1], 2, onProgress);
+  if (projects.length < maxProjects) {
+    await answerAnotherProject(page, currentSection, "No", onProgress);
   }
-
-  onProgress("Setting 'another project' answer...");
-  const anotherProjectQuestion = getQuestion(
-    page,
-    "You have another project for today?"
-  );
-
-  await ensureAriaChecked(
-    anotherProjectQuestion.getByRole("radio", {
-      name: data.anotherProject || "No",
-      exact: true
-    })
-  );
-
-  onProgress("Moving to Page 2 (Final)...");
-  const nextBtn = page.getByRole("button", { name: "Next", exact: true });
-  await nextBtn.scrollIntoViewIfNeeded();
-  await nextBtn.click();
-
-  // Wait for Section 2 ("Final")
-  await page.getByRole("heading", { name: /^Final/ }).waitFor({ state: "visible" });
-
-  onProgress("Filling 'Any blocker?'...");
   const blockerQuestion = getQuestion(page, "Any blocker?");
-  await blockerQuestion.scrollIntoViewIfNeeded();
+  await advanceToSection(page, currentSection, "Final", blockerQuestion, onProgress);
+  onProgress("Filling 'Any blocker?'...");
   await blockerQuestion.locator("textarea, input[type='text']").fill(data.blocker || "None");
 
-  if (data.autoSubmit) {
-    onProgress("Submitting the form...");
-    const submitBtn = page.getByRole("button", { name: "Submit", exact: true });
-    await submitBtn.scrollIntoViewIfNeeded();
-    await submitBtn.click();
-    onProgress("Form successfully submitted!");
-  } else {
-    onProgress("Form fields filled up to Final page. Ready for review/submit.");
-  }
-
-  return { success: true };
+  return finishForm(page, data.autoSubmit, onProgress);
 }
 
-module.exports = { fillDailyCheckin };
+module.exports = { fillDailyCheckin, getProjectValidationError };

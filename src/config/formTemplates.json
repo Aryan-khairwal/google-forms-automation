@@ -1,0 +1,29 @@
+{
+  "checkin": {
+    "label": "Daily Check-in",
+    "description": "Plan your upcoming work."
+  },
+  "status": {
+    "label": "Daily Status",
+    "description": "Report completed work and actual hours.",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdz5c-fUu-3Kch4Cp6b31OwxvBMD4qOOoSxJW1Hzd5Q-VBqmA/viewform",
+    "reasons": ["Short Leave", "Half Day", "I did not followed office timings"],
+    "fullDayReason": "I did complete my 8.5 hours"
+  },
+  "leave": {
+    "label": "Leave Application",
+    "description": "Prepare a leave request for review.",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdO0Rsa7Dgg4FX6vQKckLfVpM0ELe-cQOWew01cpbdr9BAE5w/viewform",
+    "fields": [
+      { "id": "name", "label": "Name", "type": "text", "required": true },
+      { "id": "leaveType", "label": "Leave type", "type": "select", "required": true, "options": ["Casual leave (Paid)", "Casual Leave (Unpaid)", "Sick Leave", "Emergency leave", "Vacation leave", "Wedding leave", "Short leave (Morning)", "Short leave (Evening)", "Half day leave (Morning)", "Half day leave (Evening)", "Funeral Leave", "Remote Work", "Other Leave"] },
+      { "id": "days", "label": "Number of leave days", "type": "number", "required": true },
+      { "id": "startDate", "label": "Leave date", "type": "date", "required": true },
+      { "id": "endDate", "label": "Leave To date", "type": "date" },
+      { "id": "reason", "label": "Reason for leave", "type": "textarea", "required": true },
+      { "id": "coverage", "label": "Who will cover your responsibilities during your absence?", "type": "text", "required": true },
+      { "id": "workComplete", "label": "Have you covered up/completed your work for that day?", "type": "select", "required": true, "options": ["Yes", "No"] },
+      { "id": "comments", "label": "Any additional comments or information you would like to provide.", "type": "textarea" }
+    ]
+  }
+}
